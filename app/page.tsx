@@ -4,11 +4,10 @@ import { useEffect, useState } from "react";
 import { Notification, NotificationType } from "./types";
 import NotificationItem from "./components/notificationItems";
 
-const RECEIVER = "adelino";
+const RECEIVER = "Adelino";
 
 export default function App() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-
   const [form, setForm] = useState({
     recipient: RECEIVER,
     type: "SYSTEM" as NotificationType,
@@ -16,16 +15,9 @@ export default function App() {
     message: "",
   });
 
-  const unreadCount = notifications.filter(
-    (notification) => !notification.read
-  ).length;
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
 
-  /*
-   * ========================================
-   * SSE
-   * ========================================
-   */
-
+  //SSE
   useEffect(() => {
     const eventSource = new EventSource(
       `/api/notifications/stream?receiver=${encodeURIComponent(RECEIVER)}`
@@ -39,21 +31,10 @@ export default function App() {
       try {
         const notificationEvent = JSON.parse(event.data);
 
-        console.log(
-          "Notification Event recebido:",
-          notificationEvent
-        );
+        console.log("Notification Event recebido:", notificationEvent);
 
-        /*
-         * Ignora a mensagem inicial enviada
-         * pelo endpoint SSE.
-         */
-        if (
-          notificationEvent.message ===
-          "SSE connection established"
-        ) {
-          return;
-        }
+        // Ignora a mensagem inicial enviada pelo endpoint SSE.
+        if (notificationEvent.message === "SSE connection established") return;
 
         const notification: Notification = {
           id: crypto.randomUUID(),
@@ -85,46 +66,29 @@ export default function App() {
 
     return () => {
       console.log("Encerrando conexão SSE");
-
       eventSource.close();
     };
   }, []);
 
-  /*
-   * ========================================
-   * DOMAIN EVENT
-   * ========================================
-   */
-
-  async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>
-  ) {
+  // DOMAIN EVENT
+  async function handleSubmit( event: React.FormEvent<HTMLFormElement> ) {
     event.preventDefault();
 
-    if (
-      !form.recipient.trim() ||
-      !form.title.trim() ||
-      !form.message.trim()
-    ) {
-      return;
-    }
+    if (!form.recipient.trim() || !form.title.trim() || !form.message.trim()) return;
 
     const domainEvent = {
       type: form.type,
       source: "notification-playground",
-
       data: {
         patientId: form.recipient,
         title: form.title,
         message: form.message,
       },
-
       timestamp: new Date().toISOString(),
     };
 
     try {
-      const response = await fetch(
-        "/api/notifications",
+      const response = await fetch("/api/notifications",
         {
           method: "POST",
           headers: {
@@ -136,21 +100,13 @@ export default function App() {
 
       const data = await response.json();
 
-      console.log(
-        "Resposta do Notification Service:",
-        data
-      );
+      console.log( "Resposta do Notification Service:", data);
 
       if (!response.ok) {
-        throw new Error(
-          data.message ||
-            "Erro ao enviar Domain Event"
-        );
+        throw new Error(data.message || "Erro ao enviar Domain Event");
       }
 
-      console.log(
-        "Domain Event enviado com sucesso!"
-      );
+      console.log("Domain Event enviado com sucesso!");
 
       setForm((current) => ({
         ...current,
@@ -165,12 +121,7 @@ export default function App() {
     }
   }
 
-  /*
-   * ========================================
-   * NOTIFICATIONS
-   * ========================================
-   */
-
+  //NOTIFICATIONS
   function markAsRead(id: string) {
     setNotifications((current) =>
       current.map((notification) =>
@@ -268,11 +219,7 @@ export default function App() {
                   type="text"
                   value={form.recipient}
                   onChange={(event) =>
-                    setForm({
-                      ...form,
-                      recipient:
-                        event.target.value,
-                    })
+                    setForm({ ...form, recipient: event.target.value })
                   }
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   placeholder="Ex: doctor-123"
@@ -292,11 +239,7 @@ export default function App() {
                   id="type"
                   value={form.type}
                   onChange={(event) =>
-                    setForm({
-                      ...form,
-                      type:
-                        event.target.value as NotificationType,
-                    })
+                    setForm({ ...form, type: event.target.value as NotificationType })
                   }
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 >
@@ -336,11 +279,7 @@ export default function App() {
                   type="text"
                   value={form.title}
                   onChange={(event) =>
-                    setForm({
-                      ...form,
-                      title:
-                        event.target.value,
-                    })
+                    setForm({ ...form, title: event.target.value })
                   }
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   placeholder="Ex: Nova consulta"
@@ -361,11 +300,7 @@ export default function App() {
                   rows={4}
                   value={form.message}
                   onChange={(event) =>
-                    setForm({
-                      ...form,
-                      message:
-                        event.target.value,
-                    })
+                    setForm({ ...form, message: event.target.value })
                   }
                   className="w-full resize-none rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   placeholder="Escreva a mensagem..."

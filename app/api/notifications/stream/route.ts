@@ -3,8 +3,7 @@ import { sseConnectionManager } from "../../../notification/delivery/sse/contain
 import { SSEConnection } from "../../../types";
 
 export async function GET(request: NextRequest) {
-  const receiver =
-    request.nextUrl.searchParams.get("receiver");
+  const receiver = request.nextUrl.searchParams.get("receiver");
 
   if (!receiver) {
     return new Response(
@@ -28,17 +27,11 @@ export async function GET(request: NextRequest) {
     start(controller) {
       connection = {
         send: async (data: string) => {
-          const message =
-            `data: ${data}\n\n`;
-
-          controller.enqueue(
-            encoder.encode(message)
-          );
+          const message = `data: ${data}\n\n`;
+          controller.enqueue( encoder.encode(message));
         },
 
-        close: () => {
-          controller.close();
-        },
+        close: () => controller.close()
       };
 
       sseConnectionManager.addConnection(
@@ -47,11 +40,7 @@ export async function GET(request: NextRequest) {
       );
 
       controller.enqueue(
-        encoder.encode(
-          `data: ${JSON.stringify({
-            message: "SSE connection established",
-          })}\n\n`
-        )
+        encoder.encode(`data: ${JSON.stringify({ message: "SSE connection established", })}\n\n`)
       );
     },
 
