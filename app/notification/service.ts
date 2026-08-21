@@ -66,6 +66,8 @@ export class NotificationService {
       receiver,
       channel: "sse",
       message: this.buildMessage(event),
+      type: event.type,
+      data: event.data,
       read: false,
       timestamp: new Date().toISOString(),
     };
