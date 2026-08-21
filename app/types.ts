@@ -56,12 +56,19 @@ export interface DomainEvent {
 export type NotificationChannel = "sse";
 
 export interface NotificationEvent {
+  id?: string;
   source: string;
   sender: string;
   receiver: string;
   channel: NotificationChannel;
-  message: string;
-  timestamp: string;
+  message?: string;
+  type?: string;
+  title?: string;
+  data?: Record<string, unknown>;
+  read?: boolean;
+  reatAt?: Date;
+  createdAt?: Date;
+  timestamp: string
 }
 
 export interface NotificationDelivery {
