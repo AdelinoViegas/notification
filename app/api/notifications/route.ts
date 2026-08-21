@@ -1,21 +1,17 @@
-// app/api/notifications/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { DomainEvent } from "../../types";
-import { NotificationService } from "../../notification/service";
-import { notificationDispatcher } from "../../notification/container";
-
-const notificationService = new NotificationService();
+import {
+  notificationService,
+  notificationDispatcher,
+} from "../../notification/container";
 
 export async function POST(
   request: NextRequest
 ) {
   try {
-    const event: DomainEvent =
-      await request.json();
+    const event: DomainEvent = await request.json();
 
-    const notifications =
-      notificationService.process(event);
+    const notifications = await notificationService.process(event);
 
     for (const notification of notifications) {
       await notificationDispatcher.dispatch(
@@ -27,6 +23,7 @@ export async function POST(
       {
         message:
           "Domain Event processado com sucesso",
+
         notifications,
       },
       {

@@ -1,11 +1,12 @@
-// src/notification/services/notification.service.ts
-
 import { DomainEvent , NotificationEvent } from "../types";
+import { NotificationRepository } from "../notification/persistence/repository";
 
 export class NotificationService {
+  constructor(
+    private readonly notificationRepository: NotificationRepository
+  ) {}
 
-  process(event: DomainEvent): NotificationEvent[] {
-
+  async process(event: DomainEvent): Promise<NotificationEvent[]> {
     // 1. Validar evento
     this.validate(event);
 
@@ -13,9 +14,17 @@ export class NotificationService {
     const receivers = this.determineReceivers(event);
 
     // 3. Construir notificações
-    return receivers.map((receiver) =>
+    const notifications = receivers.map((receiver) =>
       this.createNotification(event, receiver)
     );
+
+    // 4. Persistir notificações
+    for (const notification of notifications) {
+      await this.notificationRepository.create(notification);
+    }
+
+    // 5. Retornar notificações para o Dispatcher
+    return notifications;
   }
 
   private validate(event: DomainEvent): void {
@@ -33,7 +42,6 @@ export class NotificationService {
   }
 
   private determineReceivers(event: DomainEvent): string[] {
-
     // Por enquanto apenas exemplo.
     // As regras reais serão definidas posteriormente.
 
@@ -52,11 +60,13 @@ export class NotificationService {
   ): NotificationEvent {
 
     return {
+      id: crypto.randomUUID(),
       source: event.source,
       sender: event.source,
       receiver,
       channel: "sse",
       message: this.buildMessage(event),
+      read: false,
       timestamp: new Date().toISOString(),
     };
   }
