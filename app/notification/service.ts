@@ -1,5 +1,5 @@
 import { DomainEvent , NotificationEvent } from "../types";
-import { NotificationRepository } from "../notification/persistence/repository";
+import { NotificationRepository } from "./persistence/repository";
 
 export class NotificationService {
   constructor(
